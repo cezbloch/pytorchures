@@ -1,20 +1,30 @@
 import argparse
 
+import torch
 import torchvision.transforms as T
 from torch.utils.data import DataLoader
 from torchvision import datasets
-from torchvision.models.detection import (RetinaNet_ResNet50_FPN_Weights,
-                                          retinanet_resnet50_fpn)
+from torchvision.models.detection import (
+    RetinaNet_ResNet50_FPN_Weights,
+    retinanet_resnet50_fpn,
+)
 
 from object_detection.timing import wrap_model_layers
-from object_detection.torchvision_pipeline import \
-    TorchVisionObjectDetectionPipeline
+from object_detection.torchvision_pipeline import TorchVisionObjectDetectionPipeline
 
 
 def main(device: str, nr_images: int, show_image: bool):
+    if device == "cuda":
+        if torch.cuda.is_available():
+            print("Executing on GPU")
+        else:
+            raise ValueError("CUDA is not available.")
+    else:
+        print("Executing on CPU")
+
     transform = T.Compose(
         [
-            T.ToTensor(),  # Converts the PIL image to a PyTorch tensor
+            T.ToTensor(),
         ]
     )
 
@@ -65,7 +75,7 @@ if __name__ == "__main__":
         "--device",
         type=str,
         default="cpu",
-        help="Specify the device to run the model on.",
+        help="Specify the device to run the model on - valid options are ['cpu', 'cuda'].",
     )
     parser.add_argument(
         "--nr_images",
