@@ -30,3 +30,10 @@ Install requirements.txt
 
 To activate venv type - VS Code should automatically detect your new venv, so select it as your default interpreter.
 ```source venv/bin/activate```
+
+# Running
+
+
+# Testing
+
+All tests are located in 'tests' folder. Please follow Arange-Act-Assert pattern for all tests.
