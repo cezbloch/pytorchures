@@ -31,6 +31,7 @@ def main(image_path: str, model_url: str):
     model.eval()
     wrap_model_layers(model)
     preprocess = weights.transforms()
+    wrap_model_layers(preprocess)
     device = "cpu"
     categories = weights.meta["categories"]
     
@@ -44,14 +45,12 @@ def main(image_path: str, model_url: str):
     for images, _ in data_loader:
         for i in range(len(images)):
             image = images[i]
-            #image = T.ToPILImage()()
     
             input_tensor = pipeline.preprocess(image)
             output_tensor = pipeline.predict(input_tensor)
             image_with_boxes = pipeline.postprocess(output_tensor)
             if show_image:
-                image_with_boxes.show()
-    
+                image_with_boxes.show()    
 
 
 if __name__ == "__main__":

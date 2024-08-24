@@ -6,7 +6,7 @@ import torch
 
 
 class TimedLayer(torch.nn.Module):
-    def __init__(self, layer):
+    def __init__(self, layer):        
         super(TimedLayer, self).__init__()
         self.layer = layer
         self._total_time = 0.0
@@ -16,23 +16,49 @@ class TimedLayer(torch.nn.Module):
         x = self.layer(*args, **kwargs)
         torch.cuda.synchronize()  # Synchronize if using GPU
         end_time = time.time()
-        self._total_time = end_time - start_time
-        print(f"Layer {self.layer.__class__.__name__}: {self._total_time:.6f} seconds")
+        self._total_time = (end_time - start_time) * 1000
+        print(f"Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms")
         return x
     
     def postprocess(self, *args, **kwargs):
         return self.layer.postprocess(*args, **kwargs)
+    
+    def __len__(self):
+        return len(self.layer)
+    
+    def __iter__(self):
+        return iter(self.layer)
+    
+    def __next__(self):
+        return next(iter(self.layer))    
+    
+    # def __getattribute__(self, name):
+    #     print(f"Intercepted access to: {name}")
+    #     try:
+    #         print(f"Trying to get attribute: {name}")
+    #         return TimedLayer().__getattribute__(name)
+    #     except TypeError as e:
+    #         return self.layer.__getattribute__(name)            
+    #     except Exception as e:
+    #         print(f"Error: {e}")
+    #         def method(*args, **kwargs):
+    #             print(f"Handling non-existent method: {name}")
+    #             return f"Handled method: {name}"
+    #         return method
+        
 
     def get_time(self):
         return self._total_time
 
 
 def wrap_model_layers(model):
-    #l = [module for module in model.modules() if not isinstance(module, torch.nn.Sequential)]
     attributes = dir(model)
     for a in attributes:
-        if isinstance(getattr(model, a), torch.nn.Module):
-            setattr(model, a, TimedLayer(getattr(model, a)))
+        attr = getattr(model, a)
+        if isinstance(attr, torch.nn.Module):
+            if not isinstance(model, torch.nn.Sequential):
+                setattr(model, a, TimedLayer(attr))
+            wrap_model_layers(attr)
 
 
 def profile_function(f):
