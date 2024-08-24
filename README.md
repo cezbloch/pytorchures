@@ -43,6 +43,8 @@ The entry point to profiling the selected model 'retinanet_resnet50_fpn' is
 
 Example:
 ```python object_detection/run_profiling.py --device 'cpu' --nr_images 3```
+The script will print CPU wall time of every layer encountered in the model.
+Values are printed in a nested manner showing deeper layers at further indentation.
 
 # Testing
 

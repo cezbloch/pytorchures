@@ -6,10 +6,11 @@ import torch
 
 
 class TimedLayer(torch.nn.Module):
-    def __init__(self, layer):        
+    def __init__(self, layer: torch.nn.Module, indent: str):
         super(TimedLayer, self).__init__()
         self.layer = layer
         self._total_time = 0.0
+        self.indent = indent
 
     def forward(self, *args, **kwargs):
         start_time = time.time()
@@ -17,7 +18,7 @@ class TimedLayer(torch.nn.Module):
         torch.cuda.synchronize()  # Synchronize if using GPU
         end_time = time.time()
         self._total_time = (end_time - start_time) * 1000
-        print(f"Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms")
+        print(f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms")
         return x
     
     def postprocess(self, *args, **kwargs):
@@ -51,14 +52,14 @@ class TimedLayer(torch.nn.Module):
         return self._total_time
 
 
-def wrap_model_layers(model):
+def wrap_model_layers(model, indent = '\t') -> None:
     attributes = dir(model)
     for a in attributes:
         attr = getattr(model, a)
         if isinstance(attr, torch.nn.Module):
             if not isinstance(model, torch.nn.Sequential):
-                setattr(model, a, TimedLayer(attr))
-            wrap_model_layers(attr)
+                setattr(model, a, TimedLayer(attr, indent))
+            wrap_model_layers(attr, indent + '\t')
 
 
 def profile_function(f):
@@ -67,8 +68,8 @@ def profile_function(f):
         ts = time.time()
         result = f(*args, **kw)
         te = time.time()
-        elapsed_time = te - ts
-        print(f"Function '{f.__name__}' executed in {elapsed_time:.4f} seconds")
+        elapsed_ms = (te - ts) * 1000
+        print(f"Function '{f.__name__}' executed in {elapsed_ms:.4f} ms.")
         return result
 
     return wrap
