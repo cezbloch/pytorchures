@@ -31,9 +31,17 @@ Install requirements.txt
 To activate venv type - VS Code should automatically detect your new venv, so select it as your default interpreter.
 ```source venv/bin/activate```
 
+## Install package in editable mode
+
+In order to be able to develop and run the code install this repo in editable mode.
+```pip install -e .```
+
+TODO: move to pyproject.toml later
+
 # Running
 
 
 # Testing
 
 All tests are located in 'tests' folder. Please follow Arange-Act-Assert pattern for all tests.
+The tests should load in the test explorer.

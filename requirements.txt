@@ -4,3 +4,4 @@ Pillow
 torch
 onnx
 opencv-python
+pycocotools
