@@ -1,5 +1,5 @@
 # Object Detection project
-Welcome to the sample Object Detection (OO) documentation. Below are instruction how to setup and run this repo.
+Welcome to the Object Detection (OO) documentation. Below are instructions how to setup and run this repo.
 
 # Setup
 
