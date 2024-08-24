@@ -29,6 +29,7 @@ def main(image_path: str, model_url: str):
     weights = RetinaNet_ResNet50_FPN_Weights.DEFAULT
     model = retinanet_resnet50_fpn(weights=weights, box_score_thresh=0.95)
     model.eval()
+    wrap_model_layers(model)
     preprocess = weights.transforms()
     device = "cpu"
     categories = weights.meta["categories"]
