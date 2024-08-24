@@ -15,7 +15,7 @@ from torchvision.models.detection import (RetinaNet_ResNet50_FPN_Weights,
 from object_detection.timing import wrap_model_layers
 
 
-def main(image_path: str, model_url: str):
+def main(device: str, nr_images: int, show_image: bool):
     #image = Image.open(image_path).convert("RGB")
     #image = read_image("data/images/traffic.jpg")
     
@@ -24,7 +24,7 @@ def main(image_path: str, model_url: str):
     ])
 
     voc_dataset = datasets.VOCDetection(root='.data', year='2007', image_set='val', download=True, transform=transform)
-    data_loader = DataLoader(dataset=voc_dataset, batch_size=2, shuffle=True, num_workers=2, collate_fn=lambda x: tuple(zip(*x)))
+    data_loader = DataLoader(dataset=voc_dataset, batch_size=1, shuffle=True, num_workers=1, collate_fn=lambda x: tuple(zip(*x)))
     
     weights = RetinaNet_ResNet50_FPN_Weights.DEFAULT
     model = retinanet_resnet50_fpn(weights=weights, box_score_thresh=0.95)
@@ -32,19 +32,18 @@ def main(image_path: str, model_url: str):
     wrap_model_layers(model)
     preprocess = weights.transforms()
     wrap_model_layers(preprocess)
-    device = "cpu"
     categories = weights.meta["categories"]
     
     pipeline = TorchVisionObjectDetectionPipeline(model=model, 
                                                   preprocessor=preprocess, 
                                                   categories=categories,
                                                   device=device)
+    image_count = 0
     
-    show_image = True
-    
-    for images, _ in data_loader:
-        for i in range(len(images)):
-            image = images[i]
+    for batch_images, _ in data_loader:
+        print(f"----------------Processing image {image_count + 1} -----------------")
+        for i in range(len(batch_images[:nr_images])):
+            image = batch_images[i]
     
             input_tensor = pipeline.preprocess(image)
             output_tensor = pipeline.predict(input_tensor)
@@ -52,16 +51,17 @@ def main(image_path: str, model_url: str):
             if show_image:
                 image_with_boxes.show()    
 
+            image_count += 1
+
+        if image_count >= nr_images:
+            break
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", type=str, help="Path to the input file")
-    parser.add_argument(
-        "--model_url",
-        type=str,
-        default="facebook/detr-resnet-50",
-        help="Hugging face model URL. Example 'facebook/detr-resnet-50'",
-    )
+    parser.add_argument("--device", type=str, default='cpu', help="Specify the device to run the model on.")
+    parser.add_argument("--nr_images", type=int, default=2, help="Select how many images should be processed from the dataset.")
+    parser.add_argument("--show_image", action="store_true", help="Flag to determine whether to display the image with detected boxes.")
     args = parser.parse_args()
 
-    main(args.path, args.model_url)
+    main(args.device, args.nr_images, args.show_image)

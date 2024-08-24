@@ -36,10 +36,13 @@ To activate venv type - VS Code should automatically detect your new venv, so se
 In order to be able to develop and run the code install this repo in editable mode.
 ```pip install -e .```
 
-TODO: move to pyproject.toml later
-
 # Running
 
+The entry point to profiling the selected model 'retinanet_resnet50_fpn' is 
+```run_profiling.py``` file.
+
+Example:
+```python object_detection/run_profiling.py --device 'cpu' --nr_images 3```
 
 # Testing
 
