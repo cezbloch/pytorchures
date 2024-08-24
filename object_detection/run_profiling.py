@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 import torch
 import torchvision.transforms as T
@@ -12,15 +13,27 @@ from torchvision.models.detection import (
 from object_detection.timing import wrap_model_layers
 from object_detection.torchvision_pipeline import TorchVisionObjectDetectionPipeline
 
+LOG_FILENAME = "profiling.log"
+logging.basicConfig(
+    filename=LOG_FILENAME,
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
 
 def main(device: str, nr_images: int, show_image: bool):
+    logger.info(f"Saving logs to {LOG_FILENAME}")
+
     if device == "cuda":
         if torch.cuda.is_available():
-            print("Executing on GPU")
+            logger.info("Executing on GPU")
         else:
-            raise ValueError("CUDA is not available.")
+            msg = "CUDA is not available."
+            logger.error(msg)
+            raise ValueError(msg)
     else:
-        print("Executing on CPU")
+        logger.info("Executing on CPU")
 
     transform = T.Compose(
         [
@@ -53,7 +66,10 @@ def main(device: str, nr_images: int, show_image: bool):
     image_count = 0
 
     for batch_images, _ in data_loader:
-        print(f"----------------Processing image {image_count + 1} -----------------")
+        msg = f"----------------Processing image {image_count + 1} -----------------"
+        logger.info(msg)
+        print(msg) # I know this can be done smarter...
+        
         for i in range(len(batch_images[:nr_images])):
             image = batch_images[i]
 

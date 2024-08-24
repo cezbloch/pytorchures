@@ -2,6 +2,14 @@ import time
 from functools import wraps
 
 import torch
+import logging
+
+logging.basicConfig(
+    filename="profiling.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 class TimedLayer(torch.nn.Module):
@@ -19,9 +27,7 @@ class TimedLayer(torch.nn.Module):
         torch.cuda.synchronize()  # Synchronize if using GPU
         end_time = time.time()
         self._total_time = (end_time - start_time) * 1000
-        print(
-            f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms"
-        )
+        logger.info(f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms")
         return x
 
     def postprocess(self, *args, **kwargs):
@@ -73,7 +79,7 @@ def profile_function(f):
         result = f(*args, **kw)
         te = time.time()
         elapsed_ms = (te - ts) * 1000
-        print(f"Function '{f.__name__}' executed in {elapsed_ms:.4f} ms.")
+        logger.info(f"Function '{f.__name__}' executed in {elapsed_ms:.4f} ms.")
         return result
 
     return wrap
