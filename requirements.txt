@@ -1,7 +1,3 @@
-transformers
-datasets
-Pillow
+pytest
 torch
-onnx
-opencv-python
-pycocotools
+torchvision
