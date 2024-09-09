@@ -27,7 +27,8 @@ class TimedLayer(torch.nn.Module):
         with torch.no_grad():
             start_time = time.time()
             x = self.layer(*args, **kwargs)
-            #torch.cuda.synchronize()  # Synchronize if using GPU
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
             end_time = time.time()
             self._total_time = (end_time - start_time) * 1000
             logger.info(
