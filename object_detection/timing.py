@@ -15,22 +15,25 @@ logger = logging.getLogger(__name__)
 class TimedLayer(torch.nn.Module):
     """A wrapper class to measure the time taken by a layer in milliseconds"""
 
-    def __init__(self, layer: torch.nn.Module, indent: str):
+    def __init__(self, layer: torch.nn.Module, indent: str = '\t'):
         super(TimedLayer, self).__init__()
+        assert isinstance(layer, torch.nn.Module)
+        assert not isinstance(layer, TimedLayer)
         self.layer = layer
         self._total_time = 0.0
         self.indent = indent
 
     def forward(self, *args, **kwargs):
-        start_time = time.time()
-        x = self.layer(*args, **kwargs)
-        torch.cuda.synchronize()  # Synchronize if using GPU
-        end_time = time.time()
-        self._total_time = (end_time - start_time) * 1000
-        logger.info(
-            f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms"
-        )
-        return x
+        with torch.no_grad():
+            start_time = time.time()
+            x = self.layer(*args, **kwargs)
+            torch.cuda.synchronize()  # Synchronize if using GPU
+            end_time = time.time()
+            self._total_time = (end_time - start_time) * 1000
+            logger.info(
+                f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms"
+            )
+            return x
 
     def postprocess(self, *args, **kwargs):
         return self.layer.postprocess(*args, **kwargs)
@@ -58,18 +61,57 @@ class TimedLayer(torch.nn.Module):
     #             return f"Handled method: {name}"
     #         return method
 
-    def get_time(self):
+    def get_time(self) -> float:
         return self._total_time
 
 
 def wrap_model_layers(model, indent="\t") -> None:
     """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
+    if isinstance(model, TimedLayer):
+        return
+    
     attributes = dir(model)
+    print(f"{indent}{model.__class__.__name__}")
+    
     for a in attributes:
         attr = getattr(model, a)
-        if isinstance(attr, torch.nn.Module):
+        if a == "named_modules":
+            generator = attr()
+            for name, child in generator:
+                if child is not model:
+                    wrap_model_layers(child, indent + "\t")
+        elif isinstance(attr, torch.nn.Module):
             setattr(model, a, TimedLayer(attr, indent))
             wrap_model_layers(attr, indent + "\t")
+
+
+def traverse_named_modules(generator, parent, indent="\t") -> None:
+    """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
+    for name, object in generator:
+        #print(f"{indent}\t{name}")
+        if parent is not object:
+            traverse_model_callables(object, indent + "\t")
+
+
+
+def traverse_model_callables(obj, indent="\t") -> None:
+    """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
+    attributes = dir(obj)
+    print(f"{indent}{obj.__class__.__name__}")
+    for a in attributes:
+        attr = getattr(obj, a)
+        #if callable(attr) and "ops" in str(object.__class__.__name__):
+        # if a == "named_modules":
+        #     #print(f"{indent}\t{a}")
+        #     traverse_named_modules(attr(), object, indent + "\t")
+        if a == "named_modules":
+            generator = attr()
+            for name, child in generator:
+                if child is not obj:
+                    traverse_model_callables(child, indent + "\t")        
+        elif isinstance(attr, torch.nn.Module):
+            traverse_model_callables(attr, indent + "\t")
+
 
 
 def profile_function(f):
