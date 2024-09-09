@@ -6,7 +6,6 @@ from torchvision.models.detection import (
 
 from object_detection.torchvision_pipeline import TorchVisionObjectDetectionPipeline
 
-test_image_url = "http://images.cocodataset.org/val2017/000000039769.jpg"
 IMAGE_PATH = "data/images/traffic.jpg"
 
 
