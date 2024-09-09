@@ -68,20 +68,17 @@ class TimedLayer(torch.nn.Module):
 def wrap_model_layers(model, indent="\t") -> None:
     """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
     assert isinstance(model, torch.nn.Module)
+    assert not isinstance(model, TimedLayer)
 
-    if isinstance(model, TimedLayer):
-        return
-
-    attributes = dir(model)
     print(f"{indent}{model.__class__.__name__}")
 
-    if "named_children" in attributes:
-        generator = model.named_children()
-        for name, child in generator:
-            if child is not model:
-                wrap_model_layers(child, indent + "\t")
-                wrapped_child = TimedLayer(child, indent)
-                setattr(model, name, wrapped_child)
+    generator = model.named_children()
+    for name, child in generator:
+        if child is not model:
+            wrap_model_layers(child, indent + "\t")
+            wrapped_child = TimedLayer(child, indent)
+            setattr(model, name, wrapped_child)
+                
 
 
 def profile_function(f):

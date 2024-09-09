@@ -75,7 +75,7 @@ class SimpleCNN(nn.Module):
         return x
 
 
-def test_layer_timing():
+def test_named_model_fields_are_wrapped():
     model = SimpleCNN()
     input_tensor = torch.randn(1, 1, 28, 28)
     wrap_model_layers(model)
