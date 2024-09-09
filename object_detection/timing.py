@@ -31,7 +31,7 @@ class TimedLayer(torch.nn.Module):
             end_time = time.time()
             self._total_time = (end_time - start_time) * 1000
             logger.info(
-                f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms {self.layer}"
+                f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms/"
             )
             return x
 
