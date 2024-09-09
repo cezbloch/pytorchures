@@ -22,7 +22,6 @@ class TorchVisionObjectDetectionPipeline:
         self.device = device
         self.input_image = None
 
-
     @profile_function
     def preprocess(self, image):
         self.image = image.to(self.device)
@@ -41,9 +40,9 @@ class TorchVisionObjectDetectionPipeline:
     def postprocess(self, predictions):
         boxes = predictions["boxes"]
         assert boxes.device.type == self.device
-        
+
         labels = [self.categories[i] for i in predictions["labels"]]
-        
+
         box = draw_bounding_boxes(
             self.image,
             boxes=boxes,
@@ -52,6 +51,6 @@ class TorchVisionObjectDetectionPipeline:
             width=4,
             font_size=30,
         )
-        
+
         image_with_boxes = to_pil_image(box.detach())
         return image_with_boxes

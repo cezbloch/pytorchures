@@ -68,8 +68,8 @@ def main(device: str, nr_images: int, show_image: bool):
     for batch_images, _ in data_loader:
         msg = f"----------------Processing image {image_count + 1} -----------------"
         logger.info(msg)
-        print(msg) # I know this can be done smarter...
-        
+        print(msg)  # I know this can be done smarter...
+
         for i in range(len(batch_images[:nr_images])):
             image = batch_images[i]
 

@@ -43,7 +43,7 @@ The entry point to profiling the selected model 'retinanet_resnet50_fpn' is
 
 ## Examples
 
-Running in CPU
+Running on CPU
 ```python object_detection/run_profiling.py --device 'cpu' --nr_images 3```
 
 Running on GPU

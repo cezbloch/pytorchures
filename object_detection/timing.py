@@ -1,8 +1,8 @@
+import logging
 import time
 from functools import wraps
 
 import torch
-import logging
 
 logging.basicConfig(
     filename="profiling.log",
@@ -15,20 +15,25 @@ logger = logging.getLogger(__name__)
 class TimedLayer(torch.nn.Module):
     """A wrapper class to measure the time taken by a layer in milliseconds"""
 
-    def __init__(self, layer: torch.nn.Module, indent: str):
+    def __init__(self, layer: torch.nn.Module, indent: str = "\t"):
         super(TimedLayer, self).__init__()
+        assert isinstance(layer, torch.nn.Module)
+        assert not isinstance(layer, TimedLayer)
         self.layer = layer
         self._total_time = 0.0
         self.indent = indent
 
     def forward(self, *args, **kwargs):
-        start_time = time.time()
-        x = self.layer(*args, **kwargs)
-        torch.cuda.synchronize()  # Synchronize if using GPU
-        end_time = time.time()
-        self._total_time = (end_time - start_time) * 1000
-        logger.info(f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms")
-        return x
+        with torch.no_grad():
+            start_time = time.time()
+            x = self.layer(*args, **kwargs)
+            torch.cuda.synchronize()  # Synchronize if using GPU
+            end_time = time.time()
+            self._total_time = (end_time - start_time) * 1000
+            logger.info(
+                f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms/"
+            )
+            return x
 
     def postprocess(self, *args, **kwargs):
         return self.layer.postprocess(*args, **kwargs)
@@ -56,18 +61,24 @@ class TimedLayer(torch.nn.Module):
     #             return f"Handled method: {name}"
     #         return method
 
-    def get_time(self):
+    def get_time(self) -> float:
         return self._total_time
 
 
 def wrap_model_layers(model, indent="\t") -> None:
     """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
-    attributes = dir(model)
-    for a in attributes:
-        attr = getattr(model, a)
-        if isinstance(attr, torch.nn.Module):
-            setattr(model, a, TimedLayer(attr, indent))
-            wrap_model_layers(attr, indent + "\t")
+    assert isinstance(model, torch.nn.Module)
+    assert not isinstance(model, TimedLayer)
+
+    print(f"{indent}{model.__class__.__name__}")
+
+    generator = model.named_children()
+    for name, child in generator:
+        if child is not model:
+            wrap_model_layers(child, indent + "\t")
+            wrapped_child = TimedLayer(child, indent)
+            setattr(model, name, wrapped_child)
+                
 
 
 def profile_function(f):
