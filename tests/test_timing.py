@@ -91,7 +91,7 @@ class MyCustomLayer(nn.Conv2d):
     """This class is to demonstrate call on a non-existent method"""
 
     def custom_method(self):
-        pass
+        self.called = True
 
 
 class SimpleCNNWithCustomMethodCall(nn.Module):
@@ -121,16 +121,22 @@ class SimpleCNNWithCustomMethodCall(nn.Module):
         return x
 
 
-def test_forward_call_of_non_existent_method():
-    """
-    This tests demonstrates a problem with TimedLayer.
-    Currently, each method that in called on an object being wrapped needs to be exposed in TimedLayer.
-    This is not ideal as it may require TimedLayer to be extended for new models.
-    In the future, we may try to intercept all method calls on the object and forward them to the layer being wrapped.
-    """
+def test_method_of_wrapped_layer_can_be_accessed_through_timed_layer():
+    conv = MyCustomLayer(in_channels=1, out_channels=2, kernel_size=3)
+    timed_conv = TimedLayer(conv)
+
+    method = timed_conv.layer.custom_method
+    forwarded_method = timed_conv.custom_method
+    
+    assert method == forwarded_method
+
+
+def test_method_of_wrapper_layer_is_called_during_model_execution():
     model = SimpleCNNWithCustomMethodCall()
     input_tensor = torch.randn(1, 1, 28, 28)
     wrap_model_layers(model)
 
-    with pytest.raises(AttributeError):
-        _ = model(input_tensor)
+    _ = model(input_tensor)
+    
+    assert isinstance(model.conv1, TimedLayer)
+    assert model.conv1.called is True
