@@ -16,7 +16,7 @@ class TimedLayer(torch.nn.Module):
     """A wrapper class to measure the time taken by a layer in milliseconds"""
 
     def __init__(self, layer: torch.nn.Module, indent: str = "\t"):
-        super(TimedLayer, self).__init__()
+        super().__init__()
         assert isinstance(layer, torch.nn.Module)
         assert not isinstance(layer, TimedLayer)
         self.layer = layer
@@ -32,35 +32,22 @@ class TimedLayer(torch.nn.Module):
             end_time = time.time()
             self._total_time = (end_time - start_time) * 1000
             logger.info(
-                f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms/"
+                f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms."
             )
             return x
-
-    def postprocess(self, *args, **kwargs):
-        return self.layer.postprocess(*args, **kwargs)
 
     def __len__(self):
         return len(self.layer)
 
     def __iter__(self):
         return iter(self.layer)
-
-    def __next__(self):
-        return next(iter(self.layer))
-
-    # def __getattribute__(self, name):
-    #     print(f"Intercepted access to: {name}")
-    #     try:
-    #         print(f"Trying to get attribute: {name}")
-    #         return TimedLayer().__getattribute__(name)
-    #     except AttributeError as e:
-    #         return self.layer.__getattribute__(name)
-    #     except Exception as e:
-    #         print(f"Error: {e}")
-    #         def method(*args, **kwargs):
-    #             print(f"Handling non-existent method: {name}")
-    #             return f"Handled method: {name}"
-    #         return method
+    
+    def __getattr__(self, name):
+        """Delegate all other attribute access to the wrapped layer."""
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.layer, name)
 
     def get_time(self) -> float:
         return self._total_time
@@ -83,7 +70,7 @@ def wrap_model_layers(model, indent="\t") -> None:
 
 
 def profile_function(f):
-    """decorator to profile function calls. Prints the time taken by the function in milliseconds"""
+    """Decorator to profile function calls. Prints the time taken by the function in milliseconds."""
 
     @wraps(f)
     def wrap(*args, **kw):
