@@ -1,7 +1,17 @@
-# Pytorch profier
-Pytorchoors is a simple model profiler intended for any pytorch model. 
+# Pytorch profiler
+Pytorchures is a simple model profiler intended for any pytorch model. 
 It measures execution time of model layers individually. Every layer of a model is wrapped with timing class which measures latency when called.
 
+TLDR;
+
+Install
+```
+git clone https://github.com/cezbloch/pytorchures.git
+
+pip install -e .
+```
+
+Run
 ```
 from pytorchures.timing import wrap_model_layers
 
