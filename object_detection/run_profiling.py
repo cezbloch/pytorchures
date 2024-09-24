@@ -2,16 +2,15 @@ import argparse
 import logging
 
 import torch
+import torchvision
 import torchvision.transforms as T
 from torch.utils.data import DataLoader
 from torchvision import datasets
-from torchvision.models.detection import (
-    RetinaNet_ResNet50_FPN_Weights,
-    retinanet_resnet50_fpn,
-)
+from torchvision.models import get_model, get_model_weights, list_models
 
 from object_detection.timing import wrap_model_layers
-from object_detection.torchvision_pipeline import TorchVisionObjectDetectionPipeline
+from object_detection.torchvision_pipeline import \
+    TorchVisionObjectDetectionPipeline
 
 LOG_FILENAME = "profiling.log"
 logging.basicConfig(
@@ -22,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def main(device: str, nr_images: int, show_image: bool):
+def main(device: str, nr_images: int, show_image: bool, model_name: str):
     logger.info(f"Saving logs to {LOG_FILENAME}")
 
     if device == "cuda":
@@ -52,9 +51,11 @@ def main(device: str, nr_images: int, show_image: bool):
         collate_fn=lambda x: tuple(zip(*x)),
     )
 
-    weights = RetinaNet_ResNet50_FPN_Weights.DEFAULT
-    model = retinanet_resnet50_fpn(weights=weights, box_score_thresh=0.95)
+    logger.info(f"Fetching pretrained model '{model_name}'.")
+    weights = get_model_weights(model_name).DEFAULT
+    model = get_model(model_name, weights="DEFAULT")
     model.eval()
+
     wrap_model_layers(model)
     preprocess = weights.transforms()
     wrap_model_layers(preprocess)
@@ -100,10 +101,16 @@ if __name__ == "__main__":
         help="Select how many images should be processed from the dataset.",
     )
     parser.add_argument(
+        "--model_name",
+        type=str,
+        default="retinanet_resnet50_fpn",
+        help=f"Select the model to use from the list of available models: {list_models(module=torchvision.models.detection)}",
+    )
+    parser.add_argument(
         "--show_image",
         action="store_true",
         help="Flag to determine whether to display the image with detected boxes.",
     )
     args = parser.parse_args()
 
-    main(args.device, args.nr_images, args.show_image)
+    main(args.device, args.nr_images, args.show_image, args.model_name)
