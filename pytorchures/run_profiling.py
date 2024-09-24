@@ -8,8 +8,8 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.models import get_model, get_model_weights, list_models
 
-from object_detection.timing import wrap_model_layers
-from object_detection.torchvision_pipeline import \
+from pytorchures.timing import wrap_model_layers
+from pytorchures.torchvision_pipeline import \
     TorchVisionObjectDetectionPipeline
 
 LOG_FILENAME = "profiling.log"

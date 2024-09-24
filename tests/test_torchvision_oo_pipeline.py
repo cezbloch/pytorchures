@@ -4,7 +4,7 @@ from torchvision.models.detection import (
     retinanet_resnet50_fpn,
 )
 
-from object_detection.torchvision_pipeline import TorchVisionObjectDetectionPipeline
+from pytorchures.torchvision_pipeline import TorchVisionObjectDetectionPipeline
 
 IMAGE_PATH = "data/images/traffic.jpg"
 
