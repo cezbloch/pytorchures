@@ -1,5 +1,26 @@
-# Object Detection project
-Welcome to the Object Detection (OO) documentation. Below are instructions how to setup and run this repo.
+# Pytorch profiler
+Pytorchures is a simple model profiler intended for any pytorch model. 
+It measures execution time of model layers individually. Every layer of a model is wrapped with timing class which measures latency when called.
+
+TLDR;
+
+Install
+```
+git clone https://github.com/cezbloch/pytorchures.git
+
+pip install -e .
+```
+
+Run
+```
+from pytorchures.timing import wrap_model_layers
+
+wrap_model_layers(model)
+
+model(inputs)
+```
+
+Execution time of every layer is stored in ```profiling.log``` file.
 
 # Setup
 
@@ -7,11 +28,14 @@ This repo was developed under WSL 2 running Ubuntu 20.04 LTS. The editor of choi
 
 ## Install python 
 
-The code was tested for Python 3.11, if you want to run Python 3.10 or other future version please subsitute the python version in the command below.
+The code was tested for Python 3.11 and 3.10, if you want to run Python 3.10 or other future version please subsitute the python version in the command below.
 
 In case of running new WSL below are required packages and commands.
+
 ```sudo apt-get update```
+
 ```sudo apt-get install python3.11```
+
 ```sudo apt-get install python3.11-venv```
 
 Install for PIL image.show() to work on WSL
@@ -24,30 +48,35 @@ If you choose to use the recommended VS Code as editor please install the extens
 ## Create virtual environment
 
 Create venv 
+
 ```python3.11 -m venv .venv```
+
 Install requirements.txt
+
 ```pip install -r requirements.txt```
 
 To activate venv type - VS Code should automatically detect your new venv, so select it as your default interpreter.
+
 ```source venv/bin/activate```
 
 ## Install package in editable mode
 
 In order to be able to develop and run the code install this repo in editable mode.
+
 ```pip install -e .```
 
 # Running
 
-The entry point to profiling the selected model 'retinanet_resnet50_fpn' is 
+The entry point to profiling the sample object detection models is 
 ```run_profiling.py``` file.
 
 ## Examples
 
 Running on CPU
-```python object_detection/run_profiling.py --device 'cpu' --nr_images 3```
+```python pytorchures/run_profiling.py --device 'cpu' --nr_images 3```
 
 Running on GPU
-```python object_detection/run_profiling.py --device 'cuda' --nr_images 3```
+```python pytorchures/run_profiling.py --device 'cuda' --nr_images 3```
 
 The script will print CPU wall time of every layer encountered in the model.
 Values are printed in a nested manner showing deeper layers at further indentation.

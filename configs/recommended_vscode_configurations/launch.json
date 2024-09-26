@@ -11,6 +11,20 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": false
+        },
+        {
+            "name": "Python: Run Profiling Script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/pytorchures/run_profiling.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "--device", "cuda",
+                "--nr_images", "1",
+                "--model_name", "ssdlite320_mobilenet_v3_large",
+            ]
         }
     ]
 }

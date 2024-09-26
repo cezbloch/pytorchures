@@ -1,0 +1,35 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytorchures"
+version = "0.0.1"
+description = "Measure execution time of every layer in your pytorch model."
+readme = "README.md"
+#authors = [{ name = "Real Python", email = "info@realpython.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+]
+keywords = ["pytorch", "performance", "layers", "profiling"]
+dependencies = [
+    "torch",
+    "torchvision",
+]
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = ["black", "isort", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/cezbloch/pytorchures"
+
+[project.scripts] # creates command-line scripts that call functions within your packag
+#realpython = "reader.__main__:main"
+
+[tool.setuptools]
+packages = ["pytorchures"] # tells setuptools to include the pytorchures package in the distribution

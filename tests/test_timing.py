@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from torchvision.ops import FrozenBatchNorm2d
-from object_detection.timing import wrap_model_layers, TimedLayer
+from pytorchures.timing import wrap_model_layers, TimedLayer
 
 
 def test_conv_layer_wrapping():

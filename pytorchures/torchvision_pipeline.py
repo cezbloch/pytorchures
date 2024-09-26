@@ -4,7 +4,7 @@ import torch
 from torchvision.transforms.functional import to_pil_image
 from torchvision.utils import draw_bounding_boxes
 
-from object_detection.timing import profile_function
+from pytorchures.timing import profile_function
 
 
 class TorchVisionObjectDetectionPipeline:
