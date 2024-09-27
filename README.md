@@ -6,9 +6,7 @@ TLDR;
 
 Install
 ```
-git clone https://github.com/cezbloch/pytorchures.git
-
-pip install -e .
+pip install pytorchures
 ```
 
 Run
