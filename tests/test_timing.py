@@ -1,10 +1,8 @@
-import pytest
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torchvision.ops import FrozenBatchNorm2d
-from pytorchures.timing import wrap_model_layers, TimedLayer
+from pytorchures import TimedLayer, wrap_model_layers
 
 
 def test_conv_layer_wrapping():
@@ -48,7 +46,6 @@ def test_nested_sequential_wrapping():
     _, timed_seq = next(layers)
     _, nested_conv = next(timed_seq.layer.named_children())
 
-
     assert isinstance(nested_conv, TimedLayer)
     assert isinstance(nested_conv.layer, nn.Conv2d)
 
@@ -84,7 +81,6 @@ def test_named_model_fields_are_wrapped():
 
     assert isinstance(model.conv1, TimedLayer)
     assert output is not None
-    
 
 
 class MyCustomLayer(nn.Conv2d):
@@ -127,7 +123,7 @@ def test_method_of_wrapped_layer_can_be_accessed_through_timed_layer():
 
     method = timed_conv.layer.custom_method
     forwarded_method = timed_conv.custom_method
-    
+
     assert method == forwarded_method
 
 
@@ -137,6 +133,6 @@ def test_method_of_wrapper_layer_is_called_during_model_execution():
     wrap_model_layers(model)
 
     _ = model(input_tensor)
-    
+
     assert isinstance(model.conv1, TimedLayer)
     assert model.conv1.called is True

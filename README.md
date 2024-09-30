@@ -11,7 +11,7 @@ pip install pytorchures
 
 Run
 ```
-from pytorchures.timing import wrap_model_layers
+from pytorchures import wrap_model_layers
 
 wrap_model_layers(model)
 
