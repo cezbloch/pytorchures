@@ -28,7 +28,7 @@ def test_sequential_wrapping():
     _, timed_conv = next(layers)
 
     assert isinstance(timed_conv, TimedLayer)
-    assert isinstance(timed_conv.layer, nn.Conv2d)
+    assert isinstance(timed_conv._module, nn.Conv2d)
 
 
 def test_nested_sequential_wrapping():
@@ -44,10 +44,10 @@ def test_nested_sequential_wrapping():
     layers = model.named_children()
 
     _, timed_seq = next(layers)
-    _, nested_conv = next(timed_seq.layer.named_children())
+    _, nested_conv = next(timed_seq._module.named_children())
 
     assert isinstance(nested_conv, TimedLayer)
-    assert isinstance(nested_conv.layer, nn.Conv2d)
+    assert isinstance(nested_conv._module, nn.Conv2d)
 
 
 class SimpleCNN(nn.Module):
@@ -80,7 +80,27 @@ def test_named_model_fields_are_wrapped():
     output = model(input_tensor)
 
     assert isinstance(model.conv1, TimedLayer)
+    assert isinstance(model.conv2, TimedLayer)
+    assert isinstance(model.fc1, TimedLayer)
+    assert isinstance(model.fc2, TimedLayer)
     assert output is not None
+
+
+def test_model_sublayer_timings_are_retrieved():
+    model = SimpleCNN()
+    input_tensor = torch.randn(1, 1, 28, 28)
+    timed_model = wrap_model_layers(model)
+
+    _ = timed_model(input_tensor)
+    timings_dict = timed_model.get_timings()
+
+    assert isinstance(timed_model, TimedLayer)
+    assert len(timings_dict) == 3
+    assert len(timings_dict["sub_modules"]) == 4
+    assert timings_dict["module_name"] == "SimpleCNN"
+    assert timings_dict["sub_modules"][0]["module_name"] == "Conv2d"
+    assert timings_dict["sub_modules"][0]["sub_modules"] == []
+    assert timings_dict["sub_modules"][2]["module_name"] == "Linear"
 
 
 class MyCustomLayer(nn.Conv2d):
@@ -121,7 +141,7 @@ def test_method_of_wrapped_layer_can_be_accessed_through_timed_layer():
     conv = MyCustomLayer(in_channels=1, out_channels=2, kernel_size=3)
     timed_conv = TimedLayer(conv)
 
-    method = timed_conv.layer.custom_method
+    method = timed_conv._module.custom_method
     forwarded_method = timed_conv.custom_method
 
     assert method == forwarded_method

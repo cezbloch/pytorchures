@@ -1,6 +1,7 @@
 import logging
 import time
 from functools import wraps
+from typing import Dict
 
 import torch
 
@@ -15,58 +16,74 @@ logger = logging.getLogger(__name__)
 class TimedLayer(torch.nn.Module):
     """A wrapper class to measure the time taken by a layer in milliseconds"""
 
-    def __init__(self, layer: torch.nn.Module, indent: str = "\t"):
+    def __init__(self, module: torch.nn.Module, indent: str = "\t"):
         super().__init__()
-        assert isinstance(layer, torch.nn.Module)
-        assert not isinstance(layer, TimedLayer)
-        self.layer = layer
-        self._total_time = 0.0
-        self.indent = indent
+        assert isinstance(module, torch.nn.Module)
+        assert not isinstance(module, TimedLayer)
+        self._module = module
+        self._module_name = module.__class__.__name__
+        self._total_time_ms = 0.0
+        self._indent = indent
 
     def forward(self, *args, **kwargs):
         with torch.no_grad():
             start_time = time.time()
-            x = self.layer(*args, **kwargs)
+            x = self._module(*args, **kwargs)
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
             end_time = time.time()
-            self._total_time = (end_time - start_time) * 1000
+            self._total_time_ms = (end_time - start_time) * 1000
             logger.info(
-                f"{self.indent}Layer {self.layer.__class__.__name__}: {self._total_time:.6f} ms."
+                f"{self._indent}Layer {self._module_name}: {self._total_time_ms:.6f} ms."
             )
             return x
 
     def __len__(self):
-        return len(self.layer)
+        return len(self._module)
 
     def __iter__(self):
-        return iter(self.layer)
-    
-    def __getattr__(self, name):
-        """Delegate all other attribute access to the wrapped layer."""
+        return iter(self._module)
+
+    def __getattr__(self, attribute_name):
+        """
+        Delegate all other attribute access to the wrapped layer.
+
+        NOTE: __getattr__ is called when the attribute is not found in the object's dictionary.
+        """
         try:
-            return super().__getattr__(name)
+            return super().__getattr__(attribute_name)
         except AttributeError:
-            return getattr(self.layer, name)
+            return getattr(self._module, attribute_name)
 
-    def get_time(self) -> float:
-        return self._total_time
+    def get_timings(self) -> Dict:
+        timings = {
+            "module_name": self._module_name,
+            "total_time": self._total_time_ms,
+            "sub_modules": [],
+        }
+
+        children = timings["sub_modules"]
+
+        for _, child in self._module.named_children():
+            if isinstance(child, TimedLayer):
+                children.append(child.get_timings())
+
+        return timings
 
 
-def wrap_model_layers(model, indent="\t") -> None:
+def wrap_model_layers(model, indent="\t") -> TimedLayer:
     """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
     assert isinstance(model, torch.nn.Module)
     assert not isinstance(model, TimedLayer)
 
     print(f"{indent}{model.__class__.__name__}")
 
-    generator = model.named_children()
-    for name, child in generator:
-        if child is not model:
-            wrap_model_layers(child, indent + "\t")
-            wrapped_child = TimedLayer(child, indent)
-            setattr(model, name, wrapped_child)
-                
+    for attribute_name, child in model.named_children():
+        wrap_model_layers(child, indent + "\t")
+        wrapped_child = TimedLayer(child, indent)
+        setattr(model, attribute_name, wrapped_child)
+
+    return TimedLayer(model, indent)
 
 
 def profile_function(f):

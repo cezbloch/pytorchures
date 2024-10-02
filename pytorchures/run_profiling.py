@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 
 import torch
@@ -9,8 +10,7 @@ from torchvision import datasets
 from torchvision.models import get_model, get_model_weights, list_models
 
 from pytorchures.timing import wrap_model_layers
-from pytorchures.torchvision_pipeline import \
-    TorchVisionObjectDetectionPipeline
+from pytorchures.torchvision_pipeline import TorchVisionObjectDetectionPipeline
 
 LOG_FILENAME = "profiling.log"
 logging.basicConfig(
@@ -21,7 +21,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def main(device: str, nr_images: int, show_image: bool, model_name: str):
+def main(
+    device: str,
+    nr_images: int,
+    model_name: str,
+    profiling_filename: str,
+    show_image: bool,
+):
     logger.info(f"Saving logs to {LOG_FILENAME}")
 
     if device == "cuda":
@@ -56,9 +62,9 @@ def main(device: str, nr_images: int, show_image: bool, model_name: str):
     model = get_model(model_name, weights="DEFAULT")
     model.eval()
 
-    wrap_model_layers(model)
+    model = wrap_model_layers(model)
     preprocess = weights.transforms()
-    wrap_model_layers(preprocess)
+    preprocess = wrap_model_layers(preprocess)
     categories = weights.meta["categories"]
 
     pipeline = TorchVisionObjectDetectionPipeline(
@@ -85,6 +91,11 @@ def main(device: str, nr_images: int, show_image: bool, model_name: str):
         if image_count >= nr_images:
             break
 
+    profiling_data = model.get_timings()
+
+    with open(profiling_filename, "w") as f:
+        json.dump(profiling_data, f, indent=4)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -107,10 +118,22 @@ if __name__ == "__main__":
         help=f"Select the model to use from the list of available models: {list_models(module=torchvision.models.detection)}",
     )
     parser.add_argument(
+        "--profiling_filename",
+        type=str,
+        default="profiling.json",
+        help=f"Specify the filename to save the profiling data to in json format.",
+    )
+    parser.add_argument(
         "--show_image",
         action="store_true",
         help="Flag to determine whether to display the image with detected boxes.",
     )
     args = parser.parse_args()
 
-    main(args.device, args.nr_images, args.show_image, args.model_name)
+    main(
+        args.device,
+        args.nr_images,
+        args.model_name,
+        args.profiling_filename,
+        args.show_image,
+    )
