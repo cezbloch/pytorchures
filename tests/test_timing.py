@@ -13,7 +13,7 @@ def test_conv_layer_wrapping():
     output = model(input_tensor)
 
     assert output is not None
-    assert model.get_time() > 0
+    assert model.get_timings()["module_name"] == "Conv2d"
 
 
 def test_sequential_wrapping():
@@ -59,6 +59,7 @@ class SimpleCNN(nn.Module):
         )
         self.fc1 = nn.Linear(32 * 7 * 7, 128)
         self.fc2 = nn.Linear(128, 10)
+        self.NR_LAYERS = 4
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -89,14 +90,15 @@ def test_named_model_fields_are_wrapped():
 def test_model_sublayer_timings_are_retrieved():
     model = SimpleCNN()
     input_tensor = torch.randn(1, 1, 28, 28)
-    timed_model = wrap_model_layers(model)
+    model = wrap_model_layers(model)
+    
 
-    _ = timed_model(input_tensor)
-    timings_dict = timed_model.get_timings()
+    _ = model(input_tensor)
+    timings_dict = model.get_timings()
 
-    assert isinstance(timed_model, TimedLayer)
-    assert len(timings_dict) == 3
-    assert len(timings_dict["sub_modules"]) == 4
+    assert isinstance(model, TimedLayer)
+    assert len(timings_dict) == 5
+    assert len(timings_dict["sub_modules"]) == model.NR_LAYERS
     assert timings_dict["module_name"] == "SimpleCNN"
     assert timings_dict["sub_modules"][0]["module_name"] == "Conv2d"
     assert timings_dict["sub_modules"][0]["sub_modules"] == []
