@@ -40,6 +40,14 @@ class TimedLayer(torch.nn.Module):
             )
             return x
 
+    def get_device_type(self):
+        params = self._module.parameters()
+        device_type = None
+        for i in params:
+            device_type = i.device.type
+
+        return device_type
+
     def __len__(self):
         return len(self._module)
 
@@ -60,6 +68,7 @@ class TimedLayer(torch.nn.Module):
     def get_timings(self) -> Dict:
         timings = {
             "module_name": self._module_name,
+            "device_type": self.get_device_type(),
             "execution_times_ms": self._execution_times_ms,
             "mean_time_ms": np.mean(self._execution_times_ms),
             "median_time_ms": np.median(self._execution_times_ms),

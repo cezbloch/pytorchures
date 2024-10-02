@@ -96,9 +96,10 @@ def test_model_sublayer_timings_are_retrieved():
     timings_dict = model.get_timings()
 
     assert isinstance(model, TimedLayer)
-    assert len(timings_dict) == 5
+    assert len(timings_dict) == 6
     assert len(timings_dict["sub_modules"]) == model.NR_LAYERS
     assert timings_dict["module_name"] == "SimpleCNN"
+    assert timings_dict["device_type"] == "cpu"
     assert timings_dict["sub_modules"][0]["module_name"] == "Conv2d"
     assert timings_dict["sub_modules"][0]["sub_modules"] == []
     assert timings_dict["sub_modules"][2]["module_name"] == "Linear"
