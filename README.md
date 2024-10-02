@@ -13,28 +13,35 @@ Run
 ```
 from pytorchures import wrap_model_layers
 
-wrap_model_layers(model)
+model = wrap_model_layers(model)
 
-model(inputs)
+otuput = model(inputs)
+
+profiling_data = model.get_timings()
+
+with open(profiling_filename, "w") as f:
+    json.dump(profiling_data, f, indent=4)
 ```
 
-Execution time of every layer is stored in ```profiling.log``` file.
+In the code above the model and all it's sublayers are wrapped with ```TimedLayer``` class using ```wrap_model_layers``` function. ```TimedLayer``` measures execution time when a layer is called and stores it for every time the model is called.
+Execution times of every wrapped layer are retrieved as hierarchical dictionary using ```model.get_timings()```.
+This dictionary can be saved to json file.
 
 # Setup
 
-This repo was developed under WSL 2 running Ubuntu 20.04 LTS. The editor of choice is VS Code. 
+This repo was developed under WSL 2 running Ubuntu 20.04 LTS, and Ubuntu 22.04 LTS. The editor of choice is VS Code. 
 
 ## Install python 
 
-The code was tested for Python 3.11 and 3.10, if you want to run Python 3.10 or other future version please subsitute the python version in the command below.
+The code was tested for Python 3.10, if you want to run Python 3.11 or other future version please subsitute the python version in the command below.
 
 In case of running new WSL below are required packages and commands.
 
 ```sudo apt-get update```
 
-```sudo apt-get install python3.11```
+```sudo apt-get install python3.10```
 
-```sudo apt-get install python3.11-venv```
+```sudo apt-get install python3.10-venv```
 
 Install for PIL image.show() to work on WSL
 ```sudo apt install imagemagick```
@@ -47,11 +54,7 @@ If you choose to use the recommended VS Code as editor please install the extens
 
 Create venv 
 
-```python3.11 -m venv .venv```
-
-Install requirements.txt
-
-```pip install -r requirements.txt```
+```python3.10 -m venv .venv```
 
 To activate venv type - VS Code should automatically detect your new venv, so select it as your default interpreter.
 
@@ -62,6 +65,10 @@ To activate venv type - VS Code should automatically detect your new venv, so se
 In order to be able to develop and run the code install this repo in editable mode.
 
 ```pip install -e .```
+
+To install in editable mode with additional dependencies for development use the command below.
+
+```pip install -e .[dev]```
 
 # Running
 
