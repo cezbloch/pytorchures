@@ -33,7 +33,7 @@ This repo was developed under WSL 2 running Ubuntu 20.04 LTS, and Ubuntu 22.04 L
 
 ## Install python 
 
-The code was tested for Python 3.10, if you want to run Python 3.11 or other future version please subsitute the python version in the command below.
+The code was tested for Python 3.10, if you want to run Python 3.11 or other version please subsitute the python version in the command below.
 
 In case of running new WSL below are required packages and commands.
 
