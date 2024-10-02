@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytorchures"
-version = "0.0.1"
+version = "0.1.0"
 description = "Measure execution times of every layer in your pytorch model."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -23,9 +23,10 @@ requires-python = ">=3.7"
 
 [project.optional-dependencies]
 dev = ["black", "isort", "pytest"]
+publish = ["build", "twine"]
 
 [project.urls]
 Homepage = "https://github.com/cezbloch/pytorchures"
 
 [tool.setuptools]
-packages = ["pytorchures"] # tells setuptools to include the pytorchures package in the distribution
+packages = ["pytorchures"] # tells setuptools to include the pytorchures package/directory in the distribution

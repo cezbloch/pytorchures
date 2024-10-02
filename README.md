@@ -2,7 +2,7 @@
 Pytorchures is a simple model profiler intended for any pytorch model. 
 It measures execution time of model layers individually. Every layer of a model is wrapped with timing class which measures latency when called.
 
-TLDR;
+## TLDR;
 
 Install
 ```
@@ -23,9 +23,21 @@ with open(profiling_filename, "w") as f:
     json.dump(profiling_data, f, indent=4)
 ```
 
-In the code above the model and all it's sublayers are wrapped with ```TimedLayer``` class using ```wrap_model_layers``` function. ```TimedLayer``` measures execution time when a layer is called and stores it for every time the model is called.
-Execution times of every wrapped layer are retrieved as hierarchical dictionary using ```model.get_timings()```.
-This dictionary can be saved to json file.
+One layer extract of sample output ```.json```
+
+```
+        {
+            "module_name": "Conv2dNormActivation",
+            "device_type": "cuda",
+            "execution_times_ms": [
+                110.07571220397949,
+                0.8006095886230469,
+                0.8091926574707031
+            ],
+            "mean_time_ms": 37.22850481669108,
+            "median_time_ms": 0.8091926574707031,
+        }
+```
 
 # Setup
 
@@ -84,7 +96,26 @@ Running on GPU
 ```python pytorchures/run_profiling.py --device 'cuda' --nr_images 3```
 
 The script will print CPU wall time of every layer encountered in the model.
-Values are printed in a nested manner showing deeper layers at further indentation.
+Values are printed in a nested manner.
+
+## TimedLayer wrapper
+
+```
+from pytorchures import wrap_model_layers
+
+model = wrap_model_layers(model)
+
+otuput = model(inputs)
+
+profiling_data = model.get_timings()
+
+with open(profiling_filename, "w") as f:
+    json.dump(profiling_data, f, indent=4)
+```
+
+In the code above the model and all it's sublayers are wrapped with ```TimedLayer``` class using ```wrap_model_layers``` function. ```TimedLayer``` measures execution time when a layer is called and stores it for every time the model is called.
+Execution times of every wrapped layer are retrieved as hierarchical dictionary using ```model.get_timings()```.
+This dictionary can be saved to json file. 
 
 # Testing
 
@@ -94,3 +125,21 @@ The tests should load in the test explorer.
 # Formatting
 
 This repo uses 'Black' code formatter.
+
+# Publishing to Pypi
+
+Build the package. This command will create a ```dist``` folder with ```pytorchures``` package as ```.whl```  and ```tar.gz```.
+
+```python -m build```
+
+Check if the build pacakge were build correctly.
+
+```twine check dist/*```
+
+Optionally upload the new package to ```testpypi``` server.
+
+```twine upload -r testpypi dist/*```
+
+Upload the new package to production ```pypi``` server.
+
+```twine upload dist/*```
