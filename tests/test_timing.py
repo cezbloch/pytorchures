@@ -103,6 +103,21 @@ def test_model_sublayer_timings_are_retrieved():
     assert timings_dict["sub_modules"][2]["module_name"] == "Linear"
 
 
+def test_3_time_measurements_are_available_when_model_is_called_3_times():
+    model = SimpleCNN()
+    input_tensor = torch.randn(1, 1, 28, 28)
+    timed_model = wrap_model_layers(model)
+
+    _ = timed_model(input_tensor)
+    _ = timed_model(input_tensor)
+    _ = timed_model(input_tensor)
+    timings_dict = timed_model.get_timings()
+
+    assert len(timings_dict["execution_times_ms"]) == 3
+    for i in range(4):
+        assert len(timings_dict["sub_modules"][i]["execution_times_ms"]) == 3
+
+
 class MyCustomLayer(nn.Conv2d):
     """This class is to demonstrate call on a non-existent method"""
 

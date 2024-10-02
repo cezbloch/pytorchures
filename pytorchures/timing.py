@@ -3,6 +3,7 @@ import time
 from functools import wraps
 from typing import Dict
 
+import numpy as np
 import torch
 
 logging.basicConfig(
@@ -22,7 +23,7 @@ class TimedLayer(torch.nn.Module):
         assert not isinstance(module, TimedLayer)
         self._module = module
         self._module_name = module.__class__.__name__
-        self._total_time_ms = 0.0
+        self._execution_times_ms = []
         self._indent = indent
 
     def forward(self, *args, **kwargs):
@@ -32,9 +33,10 @@ class TimedLayer(torch.nn.Module):
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
             end_time = time.time()
-            self._total_time_ms = (end_time - start_time) * 1000
+            execution_time_ms = (end_time - start_time) * 1000
+            self._execution_times_ms.append(execution_time_ms)
             logger.info(
-                f"{self._indent}Layer {self._module_name}: {self._total_time_ms:.6f} ms."
+                f"{self._indent}Layer {self._module_name}: {execution_time_ms:.6f} ms."
             )
             return x
 
@@ -58,7 +60,9 @@ class TimedLayer(torch.nn.Module):
     def get_timings(self) -> Dict:
         timings = {
             "module_name": self._module_name,
-            "total_time": self._total_time_ms,
+            "execution_times_ms": self._execution_times_ms,
+            "mean_time_ms": np.mean(self._execution_times_ms),
+            "median_time_ms": np.median(self._execution_times_ms),
             "sub_modules": [],
         }
 
