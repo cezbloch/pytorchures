@@ -1,6 +1,8 @@
 from torchvision.io.image import read_image
-from torchvision.models.detection import (RetinaNet_ResNet50_FPN_Weights,
-                                          retinanet_resnet50_fpn)
+from torchvision.models.detection import (
+    RetinaNet_ResNet50_FPN_Weights,
+    retinanet_resnet50_fpn,
+)
 
 from pytorchures import wrap_model_layers
 from pytorchures.torchvision_pipeline import TorchVisionObjectDetectionPipeline

@@ -121,7 +121,7 @@ if __name__ == "__main__":
         "--profiling_filename",
         type=str,
         default="profiling.json",
-        help=f"Specify the filename to save the profiling data to in json format.",
+        help="Specify the filename to save the profiling data to in json format.",
     )
     parser.add_argument(
         "--show_image",

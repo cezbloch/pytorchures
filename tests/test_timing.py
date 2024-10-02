@@ -91,7 +91,6 @@ def test_model_sublayer_timings_are_retrieved():
     model = SimpleCNN()
     input_tensor = torch.randn(1, 1, 28, 28)
     model = wrap_model_layers(model)
-    
 
     _ = model(input_tensor)
     timings_dict = model.get_timings()
