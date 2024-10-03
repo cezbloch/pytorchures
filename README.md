@@ -15,7 +15,7 @@ from pytorchures import TimedLayer
 
 model = TimedLayer(model)
 
-otuput = model(inputs)
+_output_ = model(inputs)
 
 profiling_data = model.get_timings()
 
