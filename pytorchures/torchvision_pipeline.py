@@ -1,4 +1,4 @@
-from typing import Callable, List, Tuple
+from typing import Callable, List
 
 import torch
 from torchvision.transforms.functional import to_pil_image
