@@ -26,6 +26,8 @@ class TimedLayer(torch.nn.Module):
         self._execution_times_ms = []
         self._indent = indent
 
+        wrap_model_layers(module, indent + "\t")
+
     def forward(self, *args, **kwargs):
         with torch.no_grad():
             start_time = time.time()
@@ -35,9 +37,6 @@ class TimedLayer(torch.nn.Module):
             end_time = time.time()
             execution_time_ms = (end_time - start_time) * 1000
             self._execution_times_ms.append(execution_time_ms)
-            logger.info(
-                f"{self._indent}Layer {self._module_name}: {execution_time_ms:.6f} ms."
-            )
             return x
 
     def get_device_type(self):
@@ -66,22 +65,30 @@ class TimedLayer(torch.nn.Module):
             return getattr(self._module, attribute_name)
 
     def get_timings(self) -> Dict:
-        timings = {
+        profiling_data = {
             "module_name": self._module_name,
             "device_type": self.get_device_type(),
-            "execution_times_ms": self._execution_times_ms,
-            "mean_time_ms": np.mean(self._execution_times_ms),
-            "median_time_ms": np.median(self._execution_times_ms),
-            "sub_modules": [],
         }
 
-        children = timings["sub_modules"]
+        if len(self._execution_times_ms) > 0:
+            exec_times = {
+                "execution_times_ms": self._execution_times_ms,
+                "mean_time_ms": np.mean(self._execution_times_ms),
+                "median_time_ms": np.median(self._execution_times_ms),
+            }
+
+            profiling_data.update(exec_times)
+
+        children = []
 
         for _, child in self._module.named_children():
             if isinstance(child, TimedLayer):
                 children.append(child.get_timings())
 
-        return timings
+        if len(children) > 0:
+            profiling_data["sub_modules"] = children
+
+        return profiling_data
 
 
 def wrap_model_layers(model, indent="\t") -> TimedLayer:
@@ -92,11 +99,8 @@ def wrap_model_layers(model, indent="\t") -> TimedLayer:
     print(f"{indent}{model.__class__.__name__}")
 
     for attribute_name, child in model.named_children():
-        wrap_model_layers(child, indent + "\t")
         wrapped_child = TimedLayer(child, indent)
         setattr(model, attribute_name, wrapped_child)
-
-    return TimedLayer(model, indent)
 
 
 def profile_function(f):

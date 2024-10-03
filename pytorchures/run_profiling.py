@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.models import get_model, get_model_weights, list_models
 
-from pytorchures.timing import wrap_model_layers
+from pytorchures import TimedLayer
 from pytorchures.torchvision_pipeline import TorchVisionObjectDetectionPipeline
 
 LOG_FILENAME = "profiling.log"
@@ -62,9 +62,9 @@ def main(
     model = get_model(model_name, weights="DEFAULT")
     model.eval()
 
-    model = wrap_model_layers(model)
+    model = TimedLayer(model)
     preprocess = weights.transforms()
-    preprocess = wrap_model_layers(preprocess)
+    preprocess = TimedLayer(preprocess)
     categories = weights.meta["categories"]
 
     pipeline = TorchVisionObjectDetectionPipeline(

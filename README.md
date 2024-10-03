@@ -11,9 +11,9 @@ pip install pytorchures
 
 Run
 ```
-from pytorchures import wrap_model_layers
+from pytorchures import TimedLayer
 
-model = wrap_model_layers(model)
+model = TimedLayer(model)
 
 otuput = model(inputs)
 
@@ -101,11 +101,11 @@ Values are printed in a nested manner.
 ## TimedLayer wrapper
 
 ```
-from pytorchures import wrap_model_layers
+from pytorchures import TimedLayer
 
-model = wrap_model_layers(model)
+model = TimedLayer(model)
 
-otuput = model(inputs)
+_output = model(inputs)
 
 profiling_data = model.get_timings()
 
@@ -113,7 +113,7 @@ with open(profiling_filename, "w") as f:
     json.dump(profiling_data, f, indent=4)
 ```
 
-In the code above the model and all it's sublayers are wrapped with ```TimedLayer``` class using ```wrap_model_layers``` function. ```TimedLayer``` measures execution time when a layer is called and stores it for every time the model is called.
+In the code above the model and all it's sublayers are recursively wrapped with ```TimedLayer``` class which measures execution times when a layers are called and stores them for every time the model is called.
 Execution times of every wrapped layer are retrieved as hierarchical dictionary using ```model.get_timings()```.
 This dictionary can be saved to json file. 
 

@@ -1,1 +1,1 @@
-from .timing import TimedLayer, wrap_model_layers
+from .timing import TimedLayer
