@@ -140,6 +140,10 @@ Optionally upload the new package to ```testpypi``` server.
 
 ```twine upload -r testpypi dist/*```
 
+To test the package from use ```testpypi``` the command:
+
+```pip install --index-url https://test.pypi.org/simple/ pytorchures```
+
 Upload the new package to production ```pypi``` server.
 
 ```twine upload dist/*```
