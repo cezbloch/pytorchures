@@ -45,15 +45,13 @@ This repo was developed under WSL 2 running Ubuntu 20.04 LTS, and Ubuntu 22.04 L
 
 ## Install python 
 
-The code was tested for Python 3.10, if you want to run Python 3.11 or other version please subsitute the python version in the command below.
-
-In case of running new WSL below are required packages and commands.
+The code was tested for Python 3.11, if you want to run other release please subsitute the python version in commands below which install python and virtual environment.
 
 ```sudo apt-get update```
 
-```sudo apt-get install python3.10```
+```sudo apt-get install python3.11```
 
-```sudo apt-get install python3.10-venv```
+```sudo apt-get install python3.11-venv```
 
 Install for PIL image.show() to work on WSL
 ```sudo apt install imagemagick```
@@ -66,7 +64,7 @@ If you choose to use the recommended VS Code as editor please install the extens
 
 Create venv 
 
-```python3.10 -m venv .venv```
+```python3.11 -m venv .venv```
 
 To activate venv type - VS Code should automatically detect your new venv, so select it as your default interpreter.
 
