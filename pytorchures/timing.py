@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class AcceleratorSynchronizer:
     def __init__(self, device_type: str) -> None:
         self._device_type = device_type
-        
+
         if self._device_type == "cpu":
             self._synchronize = torch.cpu.synchronize
         elif self._device_type == "cuda":
@@ -32,8 +32,7 @@ class AcceleratorSynchronizer:
             self._synchronize = lambda: None
         else:
             raise ValueError(f"Device type '{self._device_type}' is not supported.")
-        
-    
+
     def __call__(self) -> None:
         self._synchronize()
 
