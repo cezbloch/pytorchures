@@ -96,12 +96,12 @@ Running on GPU
 The script will print CPU wall time of every layer encountered in the model.
 Values are printed in a nested manner.
 
-## TimedLayer wrapper
+## TimedModule wrapper
 
 ```
-from pytorchures import TimedLayer
+from pytorchures import TimedModule
 
-model = TimedLayer(model)
+model = TimedModule(model)
 
 _output = model(inputs)
 
@@ -111,7 +111,7 @@ with open(profiling_filename, "w") as f:
     json.dump(profiling_data, f, indent=4)
 ```
 
-In the code above the model and all it's sublayers are recursively wrapped with ```TimedLayer``` class which measures execution times when a layers are called and stores them for every time the model is called.
+In the code above the model and all it's sublayers are recursively wrapped with ```TimedModule``` class which measures execution times when a layers are called and stores them for every time the model is called.
 Execution times of every wrapped layer are retrieved as hierarchical dictionary using ```model.get_timings()```.
 This dictionary can be saved to json file. 
 
