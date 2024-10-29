@@ -112,7 +112,7 @@ class TimedModule(torch.nn.Module):
 
 
 def wrap_model_layers(model, indent="\t") -> None:
-    """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
+    """Wrap all torch Module layers of a given model with TimedModule, to print each layer execution time."""
     assert isinstance(model, torch.nn.Module)
     assert not isinstance(model, TimedModule)
 

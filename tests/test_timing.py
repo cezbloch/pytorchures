@@ -139,7 +139,7 @@ class SimpleCNNWithCustomMethodCall(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
 
-        # when wrapped with TimedLayer, this will raise an error if not handled properly
+        # when wrapped with TimedModule, this will raise an error if not handled properly
         self.conv1.custom_method()
 
         return x
