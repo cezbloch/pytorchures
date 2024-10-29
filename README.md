@@ -26,17 +26,41 @@ with open(profiling_filename, "w") as f:
 One layer extract of sample output ```.json```
 
 ```
-        {
-            "module_name": "Conv2dNormActivation",
-            "device_type": "cuda",
-            "execution_times_ms": [
-                110.07571220397949,
-                0.8006095886230469,
-                0.8091926574707031
-            ],
-            "mean_time_ms": 37.22850481669108,
-            "median_time_ms": 0.8091926574707031,
-        }
+    {
+        "module_name": "InvertedResidual",
+        "device_type": "cuda",
+        "execution_times_ms": [
+            5.021333694458008,
+            2.427816390991211,
+            2.4025440216064453
+        ],
+        "mean_time_ms": 3.283898035685221,
+        "median_time_ms": 2.427816390991211,
+        "sub_modules": [
+            {
+                "module_name": "Sequential",
+                "device_type": "cuda",
+                "execution_times_ms": [
+                    4.198789596557617,
+                    1.9135475158691406,
+                    1.9412040710449219
+                ],
+                "mean_time_ms": 2.684513727823893,
+                "median_time_ms": 1.9412040710449219,
+                "sub_modules": [
+                    {
+                        "module_name": "Conv2dNormActivation",
+                        "device_type": "cuda",
+                        "execution_times_ms": [
+                            2.0263195037841797,
+                            0.7545948028564453,
+                            0.9317398071289062
+                        ],
+                        "mean_time_ms": 1.2375513712565105,
+                        "median_time_ms": 0.9317398071289062,
+                        "sub_modules": [
+                            ...
+                                                    
 ```
 
 # Setup
@@ -113,7 +137,9 @@ with open(profiling_filename, "w") as f:
 
 In the code above the model and all it's sublayers are recursively wrapped with ```TimedModule``` class which measures execution times when a layers are called and stores them for every time the model is called.
 Execution times of every wrapped layer are retrieved as hierarchical dictionary using ```model.get_timings()```.
-This dictionary can be saved to json file. 
+This dictionary can be saved to json file.
+
+If for some reason there is a need to clear recorded timings call ```model.clear_timings()```. This may useful in only some of the measurements should be included in the final results. It is often the case that first inference run takes much more time due to resource initialization, so clearing the measurements is a way to exclude this first run.
 
 # Testing
 

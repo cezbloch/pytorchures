@@ -66,12 +66,26 @@ def main(
     categories = weights.meta["categories"]
 
     pipeline = TorchVisionObjectDetectionPipeline(model=model, preprocessor=preprocess, categories=categories, device=device)
-    image_count = 0
 
+    # Run inference on a single image to warm up the model
+    NR_WARM_UP_RUNS = 2
+    run_inference(NR_WARM_UP_RUNS, show_image, logger, data_loader, pipeline)
+    model.clear_timings()
+
+    run_inference(nr_images, show_image, logger, data_loader, pipeline)
+
+    profiling_data = model.get_timings()
+
+    with open(profiling_filename, "w") as f:
+        json.dump(profiling_data, f, indent=4)
+
+
+def run_inference(nr_images, show_image, logger, data_loader, pipeline):
+    image_count = 0
     for batch_images, _ in data_loader:
         msg = f"----------------Processing image {image_count + 1} -----------------"
         logger.info(msg)
-        print(msg)  # I know this can be done smarter...
+        print(msg)
 
         for i in range(len(batch_images[:nr_images])):
             image = batch_images[i]
@@ -86,11 +100,6 @@ def main(
 
         if image_count >= nr_images:
             break
-
-    profiling_data = model.get_timings()
-
-    with open(profiling_filename, "w") as f:
-        json.dump(profiling_data, f, indent=4)
 
 
 if __name__ == "__main__":
