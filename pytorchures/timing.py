@@ -14,6 +14,30 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class AcceleratorSynchronizer:
+    def __init__(self, device_type: str) -> None:
+        self._device_type = device_type
+        
+        if self._device_type == "cpu":
+            self._synchronize = torch.cpu.synchronize
+        elif self._device_type == "cuda":
+            self._synchronize = torch.cuda.synchronize
+        elif self._device_type == "xpu":
+            self._synchronize = torch.xpu.synchronize
+        elif self._device_type == "mps":
+            self._synchronize = torch.mps.synchronize
+        elif self._device_type == "mtia":
+            self._synchronize = torch.mtia.synchronize
+        elif self._device_type is None:
+            self._synchronize = lambda: None
+        else:
+            raise ValueError(f"Device type '{self._device_type}' is not supported.")
+        
+    
+    def __call__(self) -> None:
+        self._synchronize()
+
+
 class TimedLayer(torch.nn.Module):
     """A wrapper class to measure the time taken by a layer in milliseconds"""
 
@@ -32,8 +56,7 @@ class TimedLayer(torch.nn.Module):
         with torch.no_grad():
             start_time = time.time()
             x = self._module(*args, **kwargs)
-            if torch.cuda.is_available():
-                torch.cuda.synchronize()
+            AcceleratorSynchronizer(self.get_device_type())()
             end_time = time.time()
             execution_time_ms = (end_time - start_time) * 1000
             self._execution_times_ms.append(execution_time_ms)
