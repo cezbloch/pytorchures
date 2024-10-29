@@ -11,9 +11,9 @@ pip install pytorchures
 
 Run
 ```
-from pytorchures import TimedLayer
+from pytorchures import TimedModule
 
-model = TimedLayer(model)
+model = TimedModule(model)
 
 _output_ = model(inputs)
 
