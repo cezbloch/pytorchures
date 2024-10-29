@@ -1,1 +1,1 @@
-from .timing import TimedLayer
+from .timing import TimedModule

@@ -35,13 +35,13 @@ class AcceleratorSynchronizer:
         self._synchronize()
 
 
-class TimedLayer(torch.nn.Module):
+class TimedModule(torch.nn.Module):
     """A wrapper class to measure the time taken by a layer in milliseconds"""
 
     def __init__(self, module: torch.nn.Module, indent: str = "\t"):
         super().__init__()
         assert isinstance(module, torch.nn.Module)
-        assert not isinstance(module, TimedLayer)
+        assert not isinstance(module, TimedModule)
         self._module = module
         self._module_name = module.__class__.__name__
         self._execution_times_ms: list[float] = []
@@ -102,7 +102,7 @@ class TimedLayer(torch.nn.Module):
         children = []
 
         for _, child in self._module.named_children():
-            if isinstance(child, TimedLayer):
+            if isinstance(child, TimedModule):
                 children.append(child.get_timings())
 
         if len(children) > 0:
@@ -114,12 +114,12 @@ class TimedLayer(torch.nn.Module):
 def wrap_model_layers(model, indent="\t") -> None:
     """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
     assert isinstance(model, torch.nn.Module)
-    assert not isinstance(model, TimedLayer)
+    assert not isinstance(model, TimedModule)
 
     print(f"{indent}{model.__class__.__name__}")
 
     for attribute_name, child in model.named_children():
-        wrapped_child = TimedLayer(child, indent)
+        wrapped_child = TimedModule(child, indent)
         setattr(model, attribute_name, wrapped_child)
 
 
