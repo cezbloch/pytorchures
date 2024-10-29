@@ -17,9 +17,7 @@ def test_conv_layer_wrapping():
 
 
 def test_sequential_wrapping():
-    model = nn.Sequential(
-        nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, padding=1)
-    )
+    model = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, padding=1))
 
     model = TimedLayer(model)
 
@@ -54,9 +52,7 @@ class SimpleCNN(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(
-            in_channels=16, out_channels=32, kernel_size=3, padding=1
-        )
+        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
         self.fc1 = nn.Linear(32 * 7 * 7, 128)
         self.fc2 = nn.Linear(128, 10)
         self.NR_LAYERS = 4
@@ -129,12 +125,8 @@ class MyCustomLayer(nn.Conv2d):
 class SimpleCNNWithCustomMethodCall(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = MyCustomLayer(
-            in_channels=1, out_channels=16, kernel_size=3, padding=1
-        )
-        self.conv2 = nn.Conv2d(
-            in_channels=16, out_channels=32, kernel_size=3, padding=1
-        )
+        self.conv1 = MyCustomLayer(in_channels=1, out_channels=16, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
         self.fc1 = nn.Linear(32 * 7 * 7, 128)
         self.fc2 = nn.Linear(128, 10)
 

@@ -46,9 +46,7 @@ def main(
         ]
     )
 
-    voc_dataset = datasets.VOCDetection(
-        root=".data", year="2007", image_set="val", download=True, transform=transform
-    )
+    voc_dataset = datasets.VOCDetection(root=".data", year="2007", image_set="val", download=True, transform=transform)
     data_loader = DataLoader(
         dataset=voc_dataset,
         batch_size=1,
@@ -67,9 +65,7 @@ def main(
     preprocess = TimedLayer(preprocess)
     categories = weights.meta["categories"]
 
-    pipeline = TorchVisionObjectDetectionPipeline(
-        model=model, preprocessor=preprocess, categories=categories, device=device
-    )
+    pipeline = TorchVisionObjectDetectionPipeline(model=model, preprocessor=preprocess, categories=categories, device=device)
     image_count = 0
 
     for batch_images, _ in data_loader:

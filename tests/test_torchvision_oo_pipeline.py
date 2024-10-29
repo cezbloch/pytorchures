@@ -20,9 +20,7 @@ def test_torchvision_oo_pipeline_can_execute_with_wrapped_model():
     image = read_image(IMAGE_PATH)
     categories = weights.meta["categories"]
 
-    pipeline = TorchVisionObjectDetectionPipeline(
-        model=model, preprocessor=preprocess, categories=categories, device=device
-    )
+    pipeline = TorchVisionObjectDetectionPipeline(model=model, preprocessor=preprocess, categories=categories, device=device)
 
     input_tensor = pipeline.preprocess(image)
     output_tensor = pipeline.predict(input_tensor)
