@@ -24,8 +24,6 @@ class AcceleratorSynchronizer:
             self._synchronize = torch.cuda.synchronize
         elif self._device_type == "xpu":
             self._synchronize = torch.xpu.synchronize
-        elif self._device_type == "mps":
-            self._synchronize = torch.mps.synchronize
         elif self._device_type == "mtia":
             self._synchronize = torch.mtia.synchronize
         elif self._device_type is None:
@@ -46,7 +44,7 @@ class TimedLayer(torch.nn.Module):
         assert not isinstance(module, TimedLayer)
         self._module = module
         self._module_name = module.__class__.__name__
-        self._execution_times_ms = []
+        self._execution_times_ms: list[float] = []
         self._indent = indent
 
         wrap_model_layers(module, indent + "\t")
@@ -113,7 +111,7 @@ class TimedLayer(torch.nn.Module):
         return profiling_data
 
 
-def wrap_model_layers(model, indent="\t") -> TimedLayer:
+def wrap_model_layers(model, indent="\t") -> None:
     """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
     assert isinstance(model, torch.nn.Module)
     assert not isinstance(model, TimedLayer)

@@ -18,7 +18,7 @@ class TorchVisionObjectDetectionPipeline:
         self.model = model.to(device)
         self.preprocessor = preprocessor
         self.categories = categories
-        self.timings = {}
+        self.timings: dict = {}
         self.device = device
         self.input_image = None
 
