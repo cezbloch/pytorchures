@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.models import get_model, get_model_weights, list_models
 
-from pytorchures import TimedLayer
+from pytorchures import TimedModule
 from pytorchures.torchvision_pipeline import TorchVisionObjectDetectionPipeline
 
 LOG_FILENAME = "profiling.log"
@@ -46,9 +46,7 @@ def main(
         ]
     )
 
-    voc_dataset = datasets.VOCDetection(
-        root=".data", year="2007", image_set="val", download=True, transform=transform
-    )
+    voc_dataset = datasets.VOCDetection(root=".data", year="2007", image_set="val", download=True, transform=transform)
     data_loader = DataLoader(
         dataset=voc_dataset,
         batch_size=1,
@@ -62,20 +60,32 @@ def main(
     model = get_model(model_name, weights="DEFAULT")
     model.eval()
 
-    model = TimedLayer(model)
+    model = TimedModule(model)
     preprocess = weights.transforms()
-    preprocess = TimedLayer(preprocess)
+    preprocess = TimedModule(preprocess)
     categories = weights.meta["categories"]
 
-    pipeline = TorchVisionObjectDetectionPipeline(
-        model=model, preprocessor=preprocess, categories=categories, device=device
-    )
-    image_count = 0
+    pipeline = TorchVisionObjectDetectionPipeline(model=model, preprocessor=preprocess, categories=categories, device=device)
 
+    # Run inference on a single image to warm up the model
+    NR_WARM_UP_RUNS = 2
+    run_inference(NR_WARM_UP_RUNS, show_image, logger, data_loader, pipeline)
+    model.clear_timings()
+
+    run_inference(nr_images, show_image, logger, data_loader, pipeline)
+
+    profiling_data = model.get_timings()
+
+    with open(profiling_filename, "w") as f:
+        json.dump(profiling_data, f, indent=4)
+
+
+def run_inference(nr_images, show_image, logger, data_loader, pipeline):
+    image_count = 0
     for batch_images, _ in data_loader:
         msg = f"----------------Processing image {image_count + 1} -----------------"
         logger.info(msg)
-        print(msg)  # I know this can be done smarter...
+        print(msg)
 
         for i in range(len(batch_images[:nr_images])):
             image = batch_images[i]
@@ -90,11 +100,6 @@ def main(
 
         if image_count >= nr_images:
             break
-
-    profiling_data = model.get_timings()
-
-    with open(profiling_filename, "w") as f:
-        json.dump(profiling_data, f, indent=4)
 
 
 if __name__ == "__main__":

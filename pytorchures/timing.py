@@ -14,16 +14,37 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class TimedLayer(torch.nn.Module):
+class AcceleratorSynchronizer:
+    def __init__(self, device_type: str) -> None:
+        self._device_type = device_type
+
+        if self._device_type == "cpu":
+            self._synchronize = torch.cpu.synchronize
+        elif self._device_type == "cuda":
+            self._synchronize = torch.cuda.synchronize
+        elif self._device_type == "xpu":
+            self._synchronize = torch.xpu.synchronize
+        elif self._device_type == "mtia":
+            self._synchronize = torch.mtia.synchronize
+        elif self._device_type is None:
+            self._synchronize = lambda: None
+        else:
+            raise ValueError(f"Device type '{self._device_type}' is not supported.")
+
+    def __call__(self) -> None:
+        self._synchronize()
+
+
+class TimedModule(torch.nn.Module):
     """A wrapper class to measure the time taken by a layer in milliseconds"""
 
     def __init__(self, module: torch.nn.Module, indent: str = "\t"):
         super().__init__()
         assert isinstance(module, torch.nn.Module)
-        assert not isinstance(module, TimedLayer)
+        assert not isinstance(module, TimedModule)
         self._module = module
         self._module_name = module.__class__.__name__
-        self._execution_times_ms = []
+        self._execution_times_ms: list[float] = []
         self._indent = indent
 
         wrap_model_layers(module, indent + "\t")
@@ -32,8 +53,7 @@ class TimedLayer(torch.nn.Module):
         with torch.no_grad():
             start_time = time.time()
             x = self._module(*args, **kwargs)
-            if torch.cuda.is_available():
-                torch.cuda.synchronize()
+            AcceleratorSynchronizer(self.get_device_type())()
             end_time = time.time()
             execution_time_ms = (end_time - start_time) * 1000
             self._execution_times_ms.append(execution_time_ms)
@@ -82,24 +102,28 @@ class TimedLayer(torch.nn.Module):
         children = []
 
         for _, child in self._module.named_children():
-            if isinstance(child, TimedLayer):
+            if isinstance(child, TimedModule):
                 children.append(child.get_timings())
 
         if len(children) > 0:
             profiling_data["sub_modules"] = children
 
         return profiling_data
+    
+    def clear_timings(self) -> None:
+        self._execution_times_ms = []
+        for _, child in self._module.named_children():
+            if isinstance(child, TimedModule):
+                child.clear_timings()
 
 
-def wrap_model_layers(model, indent="\t") -> TimedLayer:
-    """Wrap all torch Module layers of a given model with TimedLayer, to print each layer execution time."""
+def wrap_model_layers(model, indent="\t") -> None:
+    """Wrap all torch Module layers of a given model with TimedModule, to print each layer execution time."""
     assert isinstance(model, torch.nn.Module)
-    assert not isinstance(model, TimedLayer)
-
-    print(f"{indent}{model.__class__.__name__}")
+    assert not isinstance(model, TimedModule)
 
     for attribute_name, child in model.named_children():
-        wrapped_child = TimedLayer(child, indent)
+        wrapped_child = TimedModule(child, indent)
         setattr(model, attribute_name, wrapped_child)
 
 

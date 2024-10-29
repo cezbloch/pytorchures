@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytorchures"
-version = "0.1.1"
+version = "0.1.2"
 description = "Measure execution times of every layer in your pytorch model."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -12,17 +12,20 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 keywords = ["pytorch", "performance", "layers", "profiling"]
 dependencies = [
-    "torch",
-    "torchvision",
+    "torch>=2,<3",
+    "torchvision>=0.18,<1",
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
-dev = ["black", "isort", "pytest"]
+dev = ["black", "isort", "pytest", "flake8", "mypy"]
 publish = ["build", "twine"]
 
 [project.urls]
@@ -30,3 +33,17 @@ Homepage = "https://github.com/cezbloch/pytorchures"
 
 [tool.setuptools]
 packages = ["pytorchures"] # tells setuptools to include the pytorchures package/directory in the distribution
+
+[tool.flake8]
+max-line-length = 160
+
+[tool.autopep8]
+max_line_length = 160
+
+[tool.black]
+line-length = 160
+
+[tool.mypy]
+[[tool.mypy.overrides]]
+module = "torchvision.*"
+ignore_missing_imports = true
