@@ -115,6 +115,34 @@ def test_3_time_measurements_are_available_when_model_is_called_3_times():
         assert len(timings_dict["sub_modules"][i]["execution_times_ms"]) == 3
 
 
+def test_measurements_are_cleared():
+    model = SimpleCNN()
+    input_tensor = torch.randn(1, 1, 28, 28)
+    model = TimedModule(model)
+
+    _ = model(input_tensor)
+    model.clear_timings()
+    timings_dict = model.get_timings()
+
+    assert "execution_times_ms" not in timings_dict
+
+
+def test_2_measurements_are_available_after_clearing():
+    model = SimpleCNN()
+    input_tensor = torch.randn(1, 1, 28, 28)
+    model = TimedModule(model)
+
+    _ = model(input_tensor)
+    model.clear_timings()
+    _ = model(input_tensor)
+    _ = model(input_tensor)
+    timings_dict = model.get_timings()
+
+    assert len(timings_dict["execution_times_ms"]) == 2
+    for i in range(4):
+        assert len(timings_dict["sub_modules"][i]["execution_times_ms"]) == 2
+
+
 class MyCustomLayer(nn.Conv2d):
     """This class is to demonstrate call on a non-existent method"""
 

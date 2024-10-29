@@ -109,14 +109,18 @@ class TimedModule(torch.nn.Module):
             profiling_data["sub_modules"] = children
 
         return profiling_data
+    
+    def clear_timings(self) -> None:
+        self._execution_times_ms = []
+        for _, child in self._module.named_children():
+            if isinstance(child, TimedModule):
+                child.clear_timings()
 
 
 def wrap_model_layers(model, indent="\t") -> None:
     """Wrap all torch Module layers of a given model with TimedModule, to print each layer execution time."""
     assert isinstance(model, torch.nn.Module)
     assert not isinstance(model, TimedModule)
-
-    print(f"{indent}{model.__class__.__name__}")
 
     for attribute_name, child in model.named_children():
         wrapped_child = TimedModule(child, indent)
