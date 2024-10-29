@@ -42,3 +42,8 @@ max_line_length = 160
 
 [tool.black]
 line-length = 160
+
+[tool.mypy]
+[[tool.mypy.overrides]]
+module = "torchvision.*"
+ignore_missing_imports = true
